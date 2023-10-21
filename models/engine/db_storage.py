@@ -23,7 +23,7 @@ class DBStorage:
         hb_user = getenv("HBNB_MYSQL_USER")
         hb_pwd = getenv("HBNB_MYSQL_PWD")
         hb_host = getenv("HBNB_MYSQL_HOST")
-        hb_db = getenv("HBNB_MYSQL_DB")
+        hb_db = getenv("HBNB_TYPE_STORAGE")
         hb_env = getenv("HBNB_ENV")
 
         self.__engine = create_engine(
