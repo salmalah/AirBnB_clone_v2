@@ -31,7 +31,7 @@ class DBStorage:
             pool_pre_ping=True,
         )
 
-        if hb_env == "test":
+        if hb_env == "db":
             Base.metadata.drop_all(self.__engine)
 
     def reload(self):
