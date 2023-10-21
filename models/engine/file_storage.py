@@ -1,14 +1,6 @@
 #!/usr/bin/python3
 """This module defines a class to manage file storage for hbnb clone"""
 import json
-import os
-from models.base_model import BaseModel
-from models.user import User
-from models.place import Place
-from models.state import State
-from models.city import City
-from models.amenity import Amenity
-from models.review import Review
 
 
 class FileStorage:
@@ -16,50 +8,70 @@ class FileStorage:
     __file_path = 'file.json'
     __objects = {}
 
-    def all(self, cls=None):
-        """Returns a dictionary of models currently in storage"""
-        if cls:
-            if type(cls) == str:
-                return {k: v for k, v in self.__objects.items()
-                        if v.__class__.__name__ == cls}
-            else:
-                return {k: v for k, v in self.__objects.items()
-                        if v.__class__ == cls}
-        else:
-            return self.__objects
+    @property
+    def cities(self):
+        """Retruns Cities in state"""
 
     def delete(self, obj=None):
-        """"
-        to delete obj from __objects if it’s inside - if obj is equal to None
+        """loop through __objects, compare each value
+        of key with cls argument wich is object
         """
-        if obj is not None:
-            del self.__objects[obj.__class__.__name__ + '.' + obj.id]
-            self.save()
+        if obj:
+            id = obj.to_dict()["id"]
+            className = obj.to_dict()["__class__"]
+            keyName = className+"."+id
+            if keyName in FileStorage.__objects:
+                del (FileStorage.__objects[keyName])
+                self.save()
+
+    def all(self, cls=None):
+        """Returns a dictionary of models currently in storage"""
+        print_dict = {}
+        if cls:
+            className = cls.__name__
+            for k, v in FileStorage.__objects.items():
+                if k.split('.')[0] == className:
+                    print_dict[k] = v
+            return print_dict
+        else:
+            return FileStorage.__objects
 
     def new(self, obj):
         """Adds new object to storage dictionary"""
-        k = "{}.{}".format(obj.__class__.__name__, obj.id)
-        self.__objects[k] = obj
+        self.all().update({obj.to_dict()['__class__'] + '.' + obj.id: obj})
 
     def save(self):
         """Saves storage dictionary to file"""
         with open(FileStorage.__file_path, 'w') as f:
-            json_obj = {key: value.to_dict() for key,
-                    value in self.__objects.items()}
-            json.dump(json_obj, f)
+            temp = {}
+            temp.update(FileStorage.__objects)
+            for key, val in temp.items():
+                temp[key] = val.to_dict()
+            json.dump(temp, f)
 
     def reload(self):
         """Loads storage dictionary from file"""
+        from models.base_model import BaseModel
+        from models.user import User
+        from models.place import Place
+        from models.state import State
+        from models.city import City
+        from models.amenity import Amenity
+        from models.review import Review
         classes = {
                     'BaseModel': BaseModel, 'User': User, 'Place': Place,
                     'State': State, 'City': City, 'Amenity': Amenity,
                     'Review': Review
-                    }
+                  }
         try:
             temp = {}
             with open(FileStorage.__file_path, 'r') as f:
-                jl = json.load(f)
-                for k in jl:
-                    self.__objects[k] = classes[jl[k]["__class__"]](**jl[k])
-        except:
+                temp = json.load(f)
+                for key, val in temp.items():
+                    self.all()[key] = classes[val['__class__']](**val)
+        except FileNotFoundError:
             pass
+
+    def close(self):
+        """doc meth"""
+        self.reload()
