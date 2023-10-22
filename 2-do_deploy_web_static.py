@@ -12,8 +12,7 @@ env.user = "ubuntu"
 
 
 def do_pack():
-    """
-    Pack web_static into .tgz archive
+    """Pack web_static into .tgz archive
     """
     local("mkdir -p versions")
     date = datetime.now().strftime("%Y%m%d%H%M%S")
