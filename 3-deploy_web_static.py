@@ -64,6 +64,7 @@ def do_deploy(archive_path):
         print("Error:", e)
         return False
 
+
 def deploy():
     """Create and distributes archive to web servers"""
     try:
